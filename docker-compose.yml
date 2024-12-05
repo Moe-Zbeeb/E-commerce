@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  customers:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app/app.py
+      - SERVICE=customers
+    ports:
+      - "5001:5000"  # Unique port for customers
+    networks:
+      - app-network
+
+  sales:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app/app.py
+      - SERVICE=sales
+    ports:
+      - "5002:5000"  # Unique port for sales
+    networks:
+      - app-network
+
+  inventory:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app/app.py
+      - SERVICE=inventory
+    ports:
+      - "5003:5000"  # Unique port for inventory
+    networks:
+      - app-network
+
+  reviews:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app/app.py
+      - SERVICE=reviews
+    ports:
+      - "5004:5000"  # Unique port for reviews
+    networks:
+      - app-network
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  haproxy:
+    image: haproxy:latest
+    ports:
+      - "8080:80"  # Expose the load balancer on port 8080
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    depends_on:
+      - customers
+      - sales
+      - inventory
+      - reviews
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
