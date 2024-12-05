@@ -1,0 +1,151 @@
+2024-12-05 14:23:37,044 - flask_migrate - ERROR - Error: Directory migrations already exists and is not empty
+2024-12-05 14:24:39,516 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-05 14:24:39,516 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-05 14:24:43,420 - app.extensions - INFO - Response: 415 UNSUPPORTED MEDIA TYPE - Data: <!doctype html>
+<html lang=en>
+<title>415 Unsupported Media Type</title>
+<h1>Unsupported Media Type</h1>
+<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>
+
+2024-12-05 14:24:43,421 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:24:43] "[31m[1mGET / HTTP/1.1[0m" 415 -
+2024-12-05 14:24:43,518 - app.extensions - INFO - Response: 415 UNSUPPORTED MEDIA TYPE - Data: <!doctype html>
+<html lang=en>
+<title>415 Unsupported Media Type</title>
+<h1>Unsupported Media Type</h1>
+<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>
+
+2024-12-05 14:24:43,519 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:24:43] "[31m[1mGET /favicon.ico HTTP/1.1[0m" 415 -
+2024-12-05 14:25:20,574 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-05 14:25:20,575 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-05 14:26:11,458 - app.extensions - INFO - Request: POST http://localhost:5000/api/customers/register - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:26:11,487 - app.extensions - INFO - Response: 201 CREATED - Data: {"message":"Customer registered successfully"}
+
+2024-12-05 14:26:11,488 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:26:11] "[35m[1mPOST /api/customers/register HTTP/1.1[0m" 201 -
+2024-12-05 14:28:07,820 - app.extensions - INFO - Request: GET http://localhost:5000/api/customers/ - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:28:07,822 - app.extensions - INFO - Response: 200 OK - Data: [{"full_name":"Jihad Mobarak","id":2,"username":"jihad7","wallet_balance":70.0},{"full_name":"John Doe","id":3,"username":"johndoe","wallet_balance":0.0}]
+
+2024-12-05 14:28:07,823 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:28:07] "GET /api/customers/ HTTP/1.1" 200 -
+2024-12-05 14:29:34,728 - app.extensions - INFO - Request: GET http://localhost:5000/api/customers/johndoe - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:29:34,730 - app.extensions - INFO - Response: 200 OK - Data: {"address":"123 Main St","age":30,"full_name":"John Doe","gender":"Male","id":3,"marital_status":"Single","username":"johndoe","wallet_balance":0.0}
+
+2024-12-05 14:29:34,730 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:29:34] "GET /api/customers/johndoe HTTP/1.1" 200 -
+2024-12-05 14:30:14,053 - app.extensions - INFO - Request: PUT http://localhost:5000/api/customers/johndoe - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:30:14,055 - app.extensions - INFO - Response: 200 OK - Data: {"message":"Customer updated successfully"}
+
+2024-12-05 14:30:14,055 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:30:14] "PUT /api/customers/johndoe HTTP/1.1" 200 -
+2024-12-05 14:31:17,479 - app.extensions - INFO - Request: DELETE http://localhost:5000/api/customers/johndoe - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:31:17,495 - app.extensions - INFO - Response: 200 OK - Data: {"message":"Customer deleted successfully"}
+
+2024-12-05 14:31:17,495 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:31:17] "DELETE /api/customers/johndoe HTTP/1.1" 200 -
+2024-12-05 14:31:58,640 - app.extensions - INFO - Request: POST http://localhost:5000/api/customers/johndoe/charge - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:31:58,641 - app.extensions - INFO - Response: 404 NOT FOUND - Data: {"error":"Customer not found"}
+
+2024-12-05 14:31:58,641 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:31:58] "[33mPOST /api/customers/johndoe/charge HTTP/1.1[0m" 404 -
+2024-12-05 14:32:34,170 - app.extensions - INFO - Request: POST http://localhost:5000/api/customers/johndoe/charge - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:32:34,172 - app.extensions - INFO - Response: 404 NOT FOUND - Data: {"error":"Customer not found"}
+
+2024-12-05 14:32:34,172 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:32:34] "[33mPOST /api/customers/johndoe/charge HTTP/1.1[0m" 404 -
+2024-12-05 14:33:10,872 - app.extensions - INFO - Request: DELETE http://localhost:5000/api/customers/johndoe/charge - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:33:10,873 - app.extensions - INFO - Response: 405 METHOD NOT ALLOWED - Data: <!doctype html>
+<html lang=en>
+<title>405 Method Not Allowed</title>
+<h1>Method Not Allowed</h1>
+<p>The method is not allowed for the requested URL.</p>
+
+2024-12-05 14:33:10,873 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:33:10] "[31m[1mDELETE /api/customers/johndoe/charge HTTP/1.1[0m" 405 -
+2024-12-05 14:33:37,124 - app.extensions - INFO - Request: POST http://localhost:5000/api/customers/johndoe/deduct - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:33:37,125 - app.extensions - INFO - Response: 404 NOT FOUND - Data: {"error":"Customer not found"}
+
+2024-12-05 14:33:37,125 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:33:37] "[33mPOST /api/customers/johndoe/deduct HTTP/1.1[0m" 404 -
+2024-12-05 14:33:52,371 - app.extensions - INFO - Request: GET http://localhost:5000/api/customers/health - Data: {'full_name': 'John Doe', 'username': 'johndoe', 'password': 'securepassword', 'age': 30, 'address': '123 Main St', 'gender': 'Male', 'marital_status': 'Single'}
+2024-12-05 14:33:52,373 - app.extensions - INFO - Response: 200 OK - Data: {"service":"Customer Service","status":"ok"}
+
+2024-12-05 14:33:52,373 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:33:52] "GET /api/customers/health HTTP/1.1" 200 -
+2024-12-05 14:35:21,883 - app.extensions - INFO - Response: 400 BAD REQUEST - Data: <!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+2024-12-05 14:35:21,884 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:35:21] "[31m[1mGET /api/sales/goods/Laptop HTTP/1.1[0m" 400 -
+2024-12-05 14:36:12,233 - app.extensions - INFO - Response: 400 BAD REQUEST - Data: <!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+2024-12-05 14:36:12,233 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:36:12] "[31m[1mPOST /api/sales/purchase HTTP/1.1[0m" 400 -
+2024-12-05 14:36:32,551 - app.extensions - INFO - Request: POST http://localhost:5000/api/sales/purchase - Data: {'username': 'johndoe', 'good_name': 'Laptop', 'quantity': 1}
+2024-12-05 14:36:32,554 - app.extensions - INFO - Response: 404 NOT FOUND - Data: {"error":"Customer not found"}
+
+2024-12-05 14:36:32,554 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:36:32] "[33mPOST /api/sales/purchase HTTP/1.1[0m" 404 -
+2024-12-05 14:39:13,579 - app.extensions - INFO - Request: POST http://localhost:5000/api/customers/register - Data: {'full_name': 'Alice Johnson', 'username': 'alicej', 'password': 'password123', 'age': 28, 'address': '456 Maple Ave', 'gender': 'Female', 'marital_status': 'Single'}
+2024-12-05 14:39:13,603 - app.extensions - INFO - Response: 201 CREATED - Data: {"message":"Customer registered successfully"}
+
+2024-12-05 14:39:13,603 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:39:13] "[35m[1mPOST /api/customers/register HTTP/1.1[0m" 201 -
+2024-12-05 14:39:32,058 - app.extensions - INFO - Request: POST http://localhost:5000/api/customers/alicej/charge - Data: {'amount': 500.0}
+2024-12-05 14:39:32,081 - app.extensions - INFO - Response: 200 OK - Data: {"message":"500.0 charged to wallet","new_balance":500.0}
+
+2024-12-05 14:39:32,082 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:39:32] "POST /api/customers/alicej/charge HTTP/1.1" 200 -
+2024-12-05 14:40:22,634 - app.extensions - INFO - Response: 400 BAD REQUEST - Data: <!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+2024-12-05 14:40:22,634 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:40:22] "[31m[1mGET /api/sales/goods HTTP/1.1[0m" 400 -
+2024-12-05 14:40:30,773 - app.extensions - INFO - Request: GET http://localhost:5000/api/sales/goods - Data: {'username': 'alicej', 'good_name': 'Phone', 'quantity': 2}
+2024-12-05 14:40:30,774 - app.extensions - INFO - Response: 200 OK - Data: []
+
+2024-12-05 14:40:30,775 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:40:30] "GET /api/sales/goods HTTP/1.1" 200 -
+2024-12-05 14:42:07,454 - app.extensions - INFO - Request: GET http://localhost:5000/api/reviews/product/1 - Data: {'username': 'alicej', 'good_name': 'Phone', 'quantity': 2}
+2024-12-05 14:42:07,457 - app.extensions - INFO - Response: 200 OK - Data: []
+
+2024-12-05 14:42:07,458 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:42:07] "GET /api/reviews/product/1 HTTP/1.1" 200 -
+2024-12-05 14:42:10,727 - app.extensions - INFO - Response: 400 BAD REQUEST - Data: <!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+2024-12-05 14:42:10,727 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:42:10] "[31m[1mGET /api/reviews/product/1 HTTP/1.1[0m" 400 -
+2024-12-05 14:42:46,370 - app.extensions - INFO - Request: POST http://localhost:5000/api/reviews/ - Data: {'product_id': 1, 'user_id': 1, 'rating': 5, 'comment': 'Excellent product!'}
+2024-12-05 14:42:46,391 - app.extensions - INFO - Response: 201 CREATED - Data: {"comment":"Excellent product!","id":1,"product_id":1,"rating":5,"user_id":1}
+
+2024-12-05 14:42:46,392 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:42:46] "[35m[1mPOST /api/reviews/ HTTP/1.1[0m" 201 -
+2024-12-05 14:43:17,111 - app.extensions - INFO - Request: POST http://localhost:5000/api/reviews/1 - Data: {'rating': 4, 'comment': 'Good product, but could be better.'}
+2024-12-05 14:43:17,111 - app.extensions - INFO - Response: 405 METHOD NOT ALLOWED - Data: <!doctype html>
+<html lang=en>
+<title>405 Method Not Allowed</title>
+<h1>Method Not Allowed</h1>
+<p>The method is not allowed for the requested URL.</p>
+
+2024-12-05 14:43:17,112 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:43:17] "[31m[1mPOST /api/reviews/1 HTTP/1.1[0m" 405 -
+2024-12-05 14:43:48,725 - app.extensions - INFO - Request: PUT http://localhost:5000/api/reviews/1 - Data: {'rating': 4, 'comment': 'Good product, but could be better.'}
+2024-12-05 14:43:48,762 - app.extensions - INFO - Response: 200 OK - Data: {"comment":"Good product, but could be better.","id":1,"product_id":1,"rating":4,"user_id":1}
+
+2024-12-05 14:43:48,763 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:43:48] "PUT /api/reviews/1 HTTP/1.1" 200 -
+2024-12-05 14:44:13,129 - app.extensions - INFO - Request: DELETE http://localhost:5000/api/reviews/1 - Data: {'rating': 4, 'comment': 'Good product, but could be better.'}
+2024-12-05 14:44:13,148 - app.extensions - INFO - Response: 204 NO CONTENT - Data: {"message":"Review deleted successfully"}
+
+2024-12-05 14:44:13,149 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:44:13] "[35m[1mDELETE /api/reviews/1 HTTP/1.1[0m" 204 -
+2024-12-05 14:44:19,094 - app.extensions - INFO - Response: 400 BAD REQUEST - Data: <!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+2024-12-05 14:44:19,094 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:44:19] "[31m[1mDELETE /api/reviews/1 HTTP/1.1[0m" 400 -
+2024-12-05 14:44:24,301 - app.extensions - INFO - Request: DELETE http://localhost:5000/api/reviews/1 - Data: {'rating': 4, 'comment': 'Good product, but could be better.'}
+2024-12-05 14:44:24,302 - app.extensions - INFO - Response: 404 NOT FOUND - Data: {"error":"Review not found"}
+
+2024-12-05 14:44:24,302 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:44:24] "[33mDELETE /api/reviews/1 HTTP/1.1[0m" 404 -
+2024-12-05 14:44:54,415 - app.extensions - INFO - Response: 400 BAD REQUEST - Data: <!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+2024-12-05 14:44:54,415 - werkzeug - INFO - 127.0.0.1 - - [05/Dec/2024 14:44:54] "[31m[1mGET /api/reviews/product/1 HTTP/1.1[0m" 400 -
