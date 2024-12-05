@@ -1,7 +1,10 @@
+# File: /home/mohammad/E-commerce-1/app/routes/sales.py
+# --------------------------------------------------------------------------------
 from flask import Blueprint, request, jsonify
 from app.models import Customer, Goods, Sales
-from app.extensions import db, limiter
+from app.extensions import db, limiter, logger  # Ensure logger is imported
 from app.messaging import publish_message  
+from app.app import profile_route  # Import the profiling decorator
 
 # Define the blueprint
 sales_bp = Blueprint('sales_bp', __name__)
@@ -35,8 +38,8 @@ def get_good_details(good_name):
 
 
 # 3. Make a sale
-
 @sales_bp.route('/purchase', methods=['POST'])
+@profile_route  # Apply the profiling decorator (Optional)
 def make_sale():
     data = request.get_json()
     username = data.get('username')
@@ -99,3 +102,4 @@ def sales_health_check():
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500
     
+# --------------------------------------------------------------------------------

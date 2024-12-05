@@ -1,6 +1,8 @@
+# File: /home/mohammad/E-commerce-1/app/seed_data.py
 from app import create_app
 from app.extensions import db
 from app.models import Goods
+import os
 
 app = create_app()
 

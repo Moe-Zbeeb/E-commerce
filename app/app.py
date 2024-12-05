@@ -1,46 +1,37 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flask import Flask, jsonify, request
-from flask_migrate import Migrate
-from app.extensions import db, limiter, logger  # Updated import paths
-from app.routes.customers import customer_bp  # Updated import paths
-from app.routes.inventory import inventory_bp  # Updated import paths
-from app.routes.sales import sales_bp  # Updated import paths
-from app.routes.review import review_bp 
+# File: /home/mohammad/E-commerce-1/app/extensions.py
+import logging
+from flask_sqlalchemy import SQLAlchemy
+from redis import Redis
+from sqlalchemy import event
+import time
+import os  # Import os module
+from flask_session import Session  # For session management
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Initialize Redis connection
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+redis_connection = Redis(host=REDIS_HOST, port=6379)
 
-# Initialize extensions
-db.init_app(app)
-limiter.init_app(app)  # Attach limiter to app
-migrate = Migrate(app, db)
+# Initialize shared extensions
+db = SQLAlchemy()
 
-@app.errorhandler(429)
-def rate_limit_exceeded(e):
-    return jsonify({'error': 'Rate limit exceeded'}), 429
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("app.log"),  # Log to a file
+        logging.StreamHandler()         # Log to the console
+    ]
+)
+logger = logging.getLogger(__name__)
 
-# Register blueprints
-app.register_blueprint(customer_bp, url_prefix='/api/customers')
-app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
-app.register_blueprint(sales_bp, url_prefix='/api/sales')
-app.register_blueprint(review_bp, url_prefix='/api/reviews')
+# SQLAlchemy Query Profiling
+@event.listens_for(db.engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault("query_start_time", []).append(time.time())
+    logger.info(f"Executing Query: {statement}")
 
-@app.route('/health', methods=['GET'])
-def global_health_check():
-    """Check if the Flask app is running."""
-    return {"status": "ok", "message": "App is running"}, 200
-
-@app.before_request
-def log_request_info():
-    logger.info(f"Request: {request.method} {request.url} - Data: {request.get_json()}")
-
-@app.after_request
-def log_response_info(response):
-    logger.info(f"Response: {response.status} - Data: {response.get_data(as_text=True)}")
-    return response
-    
-if __name__ == "__main__":
-    app.run(debug=True)
+@event.listens_for(db.engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    total = time.time() - conn.info["query_start_time"].pop(-1)
+    logger.info(f"Query Executed in {total:.4f}s")
