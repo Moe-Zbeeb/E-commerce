@@ -1,6 +1,10 @@
 File: /home/mohammad/E-commerce-1/app/messaging.py
 --------------------------------------------------------------------------------
+# File: /home/mohammad/E-commerce-1/app/messaging.py
+# --------------------------------------------------------------------------------
 import pika
+import time  # Import time module
+from app.extensions import logger  # Import the logger
 
 # Connection parameters for RabbitMQ
 RABBITMQ_HOST = 'localhost'
@@ -17,37 +21,42 @@ def publish_message(message):
     """Publish a message to the queue."""
     channel, connection = setup_channel()
     channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
-    print(f"[x] Sent: {message}")
+    logger.info(f"[x] Sent: {message}")
     connection.close()
 
 def consume_messages(callback):
     """Consume messages from the queue."""
     channel, connection = setup_channel()
+
     def on_message(ch, method, properties, body):
-        print(f"[x] Received: {body.decode()}")
+        start_time = time.time()
+        logger.info(f"[x] Received: {body.decode()}")
         callback(body.decode())
+        elapsed_time = time.time() - start_time
+        logger.info(f"Message processed in {elapsed_time:.4f}s")
+
     channel.basic_consume(queue=QUEUE_NAME, on_message_callback=on_message, auto_ack=True)
-    print("[*] Waiting for messages. To exit press CTRL+C")
+    logger.info("[*] Waiting for messages. To exit press CTRL+C")
     channel.start_consuming()
+# --------------------------------------------------------------------------------
+
 ================================================================================
 
 File: /home/mohammad/E-commerce-1/app/extensions.py
 --------------------------------------------------------------------------------
+# File: /home/mohammad/E-commerce-1/app/extensions.py
+# --------------------------------------------------------------------------------
 import logging
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from redis import Redis
+from sqlalchemy import event
+import time  # Import time module
 
 # Initialize Redis connection
 redis_connection = Redis(host='localhost', port=6379)
 
 # Initialize shared extensions
 db = SQLAlchemy()
-limiter = Limiter(
-    key_func=get_remote_address,
-    storage_uri="redis://localhost:6379"  # Use Redis as the storage backend
-)
 
 # Configure logging
 logging.basicConfig(
@@ -59,6 +68,48 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# SQLAlchemy Query Profiling
+@event.listens_for(db.engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault("query_start_time", []).append(time.time())
+    logger.info(f"Executing Query: {statement}")
+
+@event.listens_for(db.engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    total = time.time() - conn.info["query_start_time"].pop(-1)
+    logger.info(f"Query Executed in {total:.4f}s")
+# --------------------------------------------------------------------------------
+
+================================================================================
+
+File: /home/mohammad/E-commerce-1/app/utils.py
+--------------------------------------------------------------------------------
+# File: /home/mohammad/E-commerce-1/app/utils.py
+import cProfile
+import pstats
+import io
+from app.extensions import logger
+from flask import request
+
+def profile_route(func):
+    def wrapper(*args, **kwargs):
+        profiler = cProfile.Profile()
+        profiler.enable()
+        result = func(*args, **kwargs)
+        profiler.disable()
+        
+        s = io.StringIO()
+        ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+        ps.print_stats(10)  # Adjust the number of functions to display
+        profiling_info = s.getvalue()
+        
+        logger.info(f"Profiling info for {request.path}:\n{profiling_info}")
+        
+        return result
+    wrapper.__name__ = func.__name__
+    return wrapper
+
 ================================================================================
 
 File: /home/mohammad/E-commerce-1/app/models.py
@@ -140,25 +191,43 @@ with app.app_context():
 
 File: /home/mohammad/E-commerce-1/app/app.py
 --------------------------------------------------------------------------------
+
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from flask import Flask, jsonify, request
 from flask_migrate import Migrate
-from app.extensions import db, limiter, logger  # Updated import paths
-from app.routes.customers import customer_bp  # Updated import paths
-from app.routes.inventory import inventory_bp  # Updated import paths
-from app.routes.sales import sales_bp  # Updated import paths
+from app.extensions import db, limiter, logger  # Ensure these are correctly imported
+from app.routes.customers import customer_bp
+from app.routes.inventory import inventory_bp
+from app.routes.sales import sales_bp
 from app.routes.review import review_bp 
+
+# Import Flask-Profiler
+from flask_profiler import Profiler
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Flask-Profiler Configuration
+app.config["flask_profiler"] = {
+    "enabled": True,
+    "storage": {
+        "engine": "sqlite"  # You can choose 'mongodb' or others based on your preference
+    },
+    "basicAuth": {
+        "enabled": False,  # Set to True and provide credentials if needed
+    },
+    "ignore": ["^/static/.*"],  # Routes to ignore from profiling
+}
+
 # Initialize extensions
 db.init_app(app)
 limiter.init_app(app)  # Attach limiter to app
 migrate = Migrate(app, db)
+
+# Initialize Flask-Profiler
+Profiler(app)
 
 @app.errorhandler(429)
 def rate_limit_exceeded(e):
@@ -190,35 +259,94 @@ if __name__ == "__main__":
 
 File: /home/mohammad/E-commerce-1/app/__init__.py
 --------------------------------------------------------------------------------
-from flask import Flask
-from app.extensions import db
-from app.app import migrate# Ensure these are imported
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+    
+    # Configuration
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///ecommerce.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+    
+    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-
-    # Register blueprints here
+    limiter.init_app(app)
+    CORS(app)
+    
+    # Register blueprints
     from app.routes.customers import customer_bp
+    from app.routes.inventory import inventory_bp
+    from app.routes.sales import sales_bp
+    from app.routes.review import review_bp
+    
     app.register_blueprint(customer_bp, url_prefix='/api/customers')
-
+    app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
+    app.register_blueprint(sales_bp, url_prefix='/api/sales')
+    app.register_blueprint(review_bp, url_prefix='/api/reviews')
+    
+    # Health check route
+    @app.route('/health', methods=['GET'])
+    def global_health_check():
+        """Check if the Flask app is running."""
+        return {"status": "ok", "message": "App is running"}, 200
+    
+    # Error handler for rate limiting
+    @app.errorhandler(429)
+    def rate_limit_exceeded(e):
+        return {"error": "Rate limit exceeded"}, 429
+    
+    # Logging
+    @app.before_request
+    def log_request_info():
+        logger.info(f"Request: {request.method} {request.url} - Data: {request.get_json()}")
+    
+    @app.after_request
+    def log_response_info(response):
+        logger.info(f"Response: {response.status} - Data: {response.get_data(as_text=True)}")
+        return response
+    
     return app
+
 ================================================================================
 
 File: /home/mohammad/E-commerce-1/app/message_consumer.py
 --------------------------------------------------------------------------------
+# File: /home/mohammad/E-commerce-1/app/message_consumer.py
+# --------------------------------------------------------------------------------
 from app.messaging import consume_messages
+from app.extensions import logger
+import cProfile
+import pstats
+import io
 
 def handle_message(message):
     """Process the received message."""
-    print(f"Processing message: {message}")
+    profiler = cProfile.Profile()
+    profiler.enable()
+    
+    # Existing message processing logic
+    logger.info(f"Processing message: {message}")
+    # Example processing (replace with actual logic)
+    # process_message(message)
+    
+    profiler.disable()
+    s = io.StringIO()
+    ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+    ps.print_stats(10)  # Top 10 functions
+    profiling_info = s.getvalue()
+    
+    logger.info(f"Profiling info for message processing:\n{profiling_info}")
 
 if __name__ == "__main__":
     consume_messages(handle_message)    
+# --------------------------------------------------------------------------------
+
 ================================================================================
 
 File: /home/mohammad/E-commerce-1/app/routes/inventory.py
@@ -287,10 +415,13 @@ def inventory_health_check():
 
 File: /home/mohammad/E-commerce-1/app/routes/sales.py
 --------------------------------------------------------------------------------
+# File: /home/mohammad/E-commerce-1/app/routes/sales.py
+# --------------------------------------------------------------------------------
 from flask import Blueprint, request, jsonify
 from app.models import Customer, Goods, Sales
-from app.extensions import db, limiter
+from app.extensions import db, limiter, logger  # Ensure logger is imported
 from app.messaging import publish_message  
+from app.app import profile_route  # Import the profiling decorator
 
 # Define the blueprint
 sales_bp = Blueprint('sales_bp', __name__)
@@ -324,8 +455,8 @@ def get_good_details(good_name):
 
 
 # 3. Make a sale
-
 @sales_bp.route('/purchase', methods=['POST'])
+@profile_route  # Apply the profiling decorator (Optional)
 def make_sale():
     data = request.get_json()
     username = data.get('username')
@@ -388,6 +519,7 @@ def sales_health_check():
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500
     
+# --------------------------------------------------------------------------------
 
 ================================================================================
 
@@ -613,9 +745,83 @@ def review_health_check():
 
 File: /home/mohammad/E-commerce-1/app/routes/__init__.py
 --------------------------------------------------------------------------------
+# File: /home/mohammad/E-commerce-1/app/__init__.py
+# --------------------------------------------------------------------------------
+from dotenv import load_dotenv
+import os
+from flask import Flask, request
+from flask_cors import CORS  # Ensure Flask-CORS is imported
+from app.extensions import db, migrate, limiter, logger  # Ensure all extensions are imported
 from app.routes.customers import customer_bp
 from app.routes.inventory import inventory_bp
 from app.routes.sales import sales_bp
 from app.routes.review import review_bp
+
+# Load environment variables from .env
+load_dotenv()
+
+def create_app():
+    app = Flask(__name__)
+    
+    # Configuration
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///ecommerce.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+    
+    # Flask-Profiler Configuration
+    app.config["flask_profiler"] = {
+        "enabled": True,
+        "storage": {
+            "engine": "sqlite"  # Consistent with app.py
+        },
+        "basicAuth": {
+            "enabled": False,
+        },
+        "ignore": ["^/static/.*"],
+    }
+    
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    limiter.init_app(app)
+    CORS(app)
+    
+    # Initialize Flask-Profiler
+    from flask_profiler import Profiler
+    Profiler(app)
+    
+    # Register blueprints
+    app.register_blueprint(customer_bp, url_prefix='/api/customers')
+    app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
+    app.register_blueprint(sales_bp, url_prefix='/api/sales')
+    app.register_blueprint(review_bp, url_prefix='/api/reviews')
+    
+    # Health check route
+    @app.route('/health', methods=['GET'])
+    def global_health_check():
+        """Check if the Flask app is running."""
+        return {"status": "ok", "message": "App is running"}, 200
+    
+    # Error handler for rate limiting
+    @app.errorhandler(429)
+    def rate_limit_exceeded(e):
+        return {"error": "Rate limit exceeded"}, 429
+    
+    # Logging
+    @app.before_request
+    def log_request_info():
+        logger.info(f"Request: {request.method} {request.url} - Data: {request.get_json()}")
+    
+    @app.after_request
+    def log_response_info(response):
+        if hasattr(request, 'start_time'):
+            elapsed_time = time.time() - request.start_time
+            logger.info(f"Time taken: {elapsed_time:.4f}s for {request.method} {request.path}")
+        logger.info(f"Response: {response.status} - Data: {response.get_data(as_text=True)}")
+        return response
+    
+    return app
+# --------------------------------------------------------------------------------
+
 ================================================================================
 
