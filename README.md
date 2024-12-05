@@ -1,2 +1,2 @@
 # E-commerce
-This is an Ecommerce 
+This is an Ecommerce app
